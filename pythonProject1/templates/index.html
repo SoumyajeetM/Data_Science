@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Website Title</title>
+
+    <!-- Include Bootstrap CSS from a CDN (Content Delivery Network) -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Your CSS styles go here */
+        .checkbox-grid {
+            display: flex;
+            grid-template-columns: repeat(3, 1fr);
+            flex-wrap: wrap;
+        }
+
+        .checkbox-item {
+            margin-right: 20px; /* Adjust this for spacing between checkboxes */
+            margin-bottom: 10px; /* Adjust this for spacing between rows */
+        }
+
+        .clearfix {
+            clear: both;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+        <a class="navbar-brand" href="#">Created By Soumyajeet Mohapatra</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">About</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Services</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Contact</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="container mt-5">
+    <h1>Metro-Cities Homes in India</h1>
+    <p>Price Predictor</p>
+    <form method="POST" accept-charset="utf-8">
+        <div class="row">
+           <!-- Metro City Dropdown -->
+            <div class="col-md-4 form-group">
+                <label><b>Metro City:</b>
+                    <select class="selectpicker form-control" id="MetroDropdown" name="Metro" required>
+                        {% for metro_option in Metro %}
+                            <option value="{{ metro_option }}">{{ metro_option }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+
+            <!-- Area/Locality Dropdown -->
+            <div class="col-md-4 form-group text-center">
+                <label><b>Area/Locality:</b>
+                    <select class="selectpicker form-control" id="Area" name="Area" required>
+                        <option value="">Select Area</option>
+                    </select>
+                </label>
+            </div>
+            <!-- BHK Dropdown -->
+            <div class="col-md-4 form-group text-center">
+                <label><b>Bedrooms?</b>
+                    <select class="selectpicker form-control" id="Bedroom" name="Bedroom" required>
+                        {% for Bedroom in Bedroom %}
+                           <option value="{{ Bedroom }}">{{ Bedroom }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+
+
+        </div>
+        <h3>Additional Features:</h3>
+        <p>Note: Check/Tick means You prefer that</p>
+                <div class="checkbox-grid">
+                    {% set items_per_row = 3 %}
+                    {% for Feature in Features %}
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="{{ Feature }}" name="selected_features" value="{{ Feature }}">
+                            <label for="{{ Feature }}">{{ Feature }}</label>
+                        </div>
+                        {% if loop.index % items_per_row == 0 or loop.last %}
+                            <div class="clearfix"></div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+    </form>
+
+<!-- Predict Button -->
+<div class="col-md-12 form-group" style="text-align: center">
+    <button class="btn btn-primary small-button" style="padding: 10px 50px; font-size: 25px; display: inline-block;" onclick="send_data()">Predict Price</button>
+</div>
+<!-- Prediction Result -->
+<div class="col-md-12" style="text-align: center">
+    <h3><span id="prediction"></span></h3>
+</div>
+
+
+</div>
+
+<script>
+    function form_handler(event){
+            event.preventDefault(); // Don't Submit the form normally
+    }
+    function send_data()
+    {
+            document.querySelector('form').addEventListener("submit", form_handler);
+            var fd=new FormData(document.querySelector('form'));
+            var xhr= new XMLHttpRequest();
+            xhr.open('POST','/predict',true);
+            document.getElementById("prediction").InnerHTMl = "Wait! Predicting Price...";
+            xhr.onreadystatechange = function() {
+            if (xhr.readyState == XMLHttpRequest.DONE) {
+                var responseText = xhr.responseText.trim(); // Trim whitespace
+                if (responseText === "") {
+                    // Handle empty response
+                    document.getElementById('prediction').innerHTML = "Provide Values in fields.";
+                } else {
+                    // Handle non-empty response
+                    document.getElementById('prediction').innerHTML = "Prediction(in Lakhs):  ₹" + responseText;
+                }
+                }
+            };
+            xhr.onLoad = function(){};
+            xhr.send(fd);
+    }
+</script>
+<!-- Add an event listener to the Metro City dropdown -->
+<script>
+    document.getElementById('MetroDropdown').addEventListener('change', function () {
+        const metroSelected = this.value;
+        const areaDropdown = document.getElementById('Area');
+
+        // Clear existing options
+        areaDropdown.innerHTML = '<option value="">Select Area</option>';
+
+        // Make an asynchronous request to fetch MetroAreas data based on the selected Metro
+        fetch('/get_areas/' + metroSelected)
+            .then(response => response.json())
+            .then(data => {
+
+                // Populate the Area/Locality dropdown with the retrieved areas
+                data.forEach(area => {
+                    const option = document.createElement('option');
+                    option.value = area;
+                    option.textContent = area;
+                    areaDropdown.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching MetroAreas:', error);
+            });
+    });
+</script>
+
+<!-- Include Bootstrap JS and jQuery from a CDN -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

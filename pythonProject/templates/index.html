@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Website Title</title>
+
+    <!-- Include Bootstrap CSS from a CDN (Content Delivery Network) -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+</head>
+<body>
+
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+        <a class="navbar-brand" href="#">Created By Soumyajeet Mohapatra</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">About</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Services</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Contact</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="container mt-5">
+    <h1>Indian Homes Price Predictor</h1>
+    <p>We have an accuracy of 93%.</p>
+    <form method="POST" accept-charset="utf-8">
+    <div class="row">
+        <!-- Posted By Dropdown -->
+        <div class="col-md-4 form-group">
+            <label><b>Posted By:</b>
+                <select class="selectpicker form-control" id="POSTED_BY" name="POSTED_BY" required>
+                    {% for POSTED_BY in POSTED_BY %}
+                       <option value="{{ POSTED_BY }}">{{ POSTED_BY }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+
+        <!-- BHK Dropdown -->
+        <div class="col-md-4 form-group text-center">
+            <label><b>How many BHK?</b>
+                <select class="selectpicker form-control" id="BHK_NO" name="BHK_NO" required>
+                    {% for BHK_NO in BHK_NO %}
+                       <option value="{{ BHK_NO }}">{{ BHK_NO }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+             <!-- Predict Button -->
+    <div class="col-md-12 form-group">
+        <button class="btn btn-primary small-button" style="padding: 10px 50px; font-size: 25px; display: inline-block;" onclick="send_data()">Predict Price</button>
+    </div>
+        </div>
+
+        <!-- Square Feet Input -->
+        <div class="col-md-4 form-group text-right">
+            <label><b>Square Feet (ft^2)</b>
+                <input type="number" class="form-control" id="SQFT" name="SQFT" placeholder="1000" required>
+            </label>
+        </div>
+
+        <!-- Prediction Result -->
+        <div class="col-md-12" style="text-align: center">
+            <h3><span id="prediction"></span></h3>
+        </div>
+
+    </div>
+
+</form>
+
+
+
+</div>
+
+<script>
+    function form_handler(event){
+            event.preventDefault(); // Don't Submit the form normally
+    }
+    function send_data()
+    {
+            document.querySelector('form').addEventListener("submit", form_handler);
+            var fd=new FormData(document.querySelector('form'));
+            var xhr= new XMLHttpRequest();
+            xhr.open('POST','/predict',true);
+            document.getElementById("prediction").innerHTMl = "Wait! Predicting Price...";
+            xhr.onreadystatechange = function() {
+            if (xhr.readyState == XMLHttpRequest.DONE) {
+                var responseText = xhr.responseText.trim(); // Trim whitespace
+                if (responseText === "") {
+                    // Handle empty response
+                    document.getElementById('prediction').innerHTML = "Provide Values in fields.";
+                } else {
+                    // Handle non-empty response
+                    document.getElementById('prediction').innerHTML = "Prediction(in Lakhs):  ₹" + responseText;
+                }
+                }
+            };
+            xhr.onLoad = function(){};
+            xhr.send(fd);
+    }
+</script>
+
+<!-- Include Bootstrap JS and jQuery from a CDN -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
