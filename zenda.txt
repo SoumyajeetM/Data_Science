@@ -1,0 +1,23 @@
+import pandas as pd
+
+df=pd.DataFrame(dataset)
+
+def grade(marks):
+  if marks>=80:
+	return 'A'
+
+
+
+
+df['Grade']=df['Marks'].apply(grade)
+
+print(df)
+
+
+
+select s.student_name , c.class_name, b.subject_name, m.marks
+from student s join student_class sc on s.student_id=sc.student_id
+join class c on c.class_id=sc.class_id
+join marks m on m.student_id=sc.student_id
+join subject b on b.subject_id=m.subject_id
+
